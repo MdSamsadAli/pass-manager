@@ -89,4 +89,60 @@ class FrontendController extends Controller
 
         return view('partial_list', compact('user_list'))->render();
     }
+
+    public function bookmarklet(Request $request)
+    {
+        $site = $request->site;
+        $user = Auth::user();
+        $items = $user->managers()->get()->map(function ($item) {
+            return [
+                'username' => $item->sitename,
+                'password' => $item->password,
+            ];
+        });
+        // dd($items, $site);
+        return view('bookmarklet', compact('items', 'site'));
+    }
+
+    public function socialMedia()
+    {
+        $user = Auth::user();
+        $user_list = $user->managers()->paginate(5);
+        return view('socialmedia', compact('user_list'));
+    }
+
+    public function bankDetails()
+    {
+        $user = Auth::user();
+        $user_list = $user->managers()->paginate(5);
+        return view('bankdetails', compact('user_list'));
+    }
+
+    public function educationInfo()
+    {
+        $user = Auth::user();
+        $user_list = $user->managers()->paginate(5);
+        return view('educationinfo', compact('user_list'));
+    }
+
+    public function notes()
+    {
+        $user = Auth::user();
+        $user_list = $user->managers()->paginate(5);
+        return view('notes', compact('user_list'));
+    }
+
+    public function blogs()
+    {
+        $user = Auth::user();
+        $user_list = $user->managers()->paginate(5);
+        return view('blogs', compact('user_list'));
+    }
+
+    public function drivingLicence()
+    {
+        $user = Auth::user();
+        $user_list = $user->managers()->paginate(5);
+        return view('driving-licence', compact('user_list'));
+    }
 }

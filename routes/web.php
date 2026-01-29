@@ -36,6 +36,15 @@ Route::middleware('auth')->group(function () {
     Route::delete('/delete/{id}', [FrontendController::class, 'delete'])->name('front.delete');
 
     Route::get('/ajax-search', [FrontendController::class, 'ajaxSearch'])->name('front.ajaxSearch');
+
+
+    Route::get('/bookmarklet', [FrontendController::class, 'bookmarklet']);
+    Route::get('/social-media', [FrontendController::class, 'socialMedia'])->name('front.socialmedia');
+    Route::get('/bank-details', [FrontendController::class, 'bankDetails'])->name('front.bankdetails');
+    Route::get('/education-info', [FrontendController::class, 'educationInfo'])->name('front.educationinfo');
+    Route::get('/notes', [FrontendController::class, 'notes'])->name('front.notes');
+    Route::get('/blogs', [FrontendController::class, 'blogs'])->name('front.blogs');
+    Route::get('/driving-licence', [FrontendController::class, 'drivingLicence'])->name('front.drivinglicence');
 });
 
 Route::middleware('guest')->group(function () {
