@@ -27,8 +27,8 @@
                                         <thead>
                                             <tr>
                                                 <th scope="col">SNo.</th>
-                                                <th scope="col">User Name or Email</th>
-                                                <th scope="col">Site Name</th>
+                                                <th scope="col">Phone number</th>
+                                                <th scope="col">Bank Name</th>
                                                 <th scope="col">Password</th>
                                                 <th scope="col">Action</th>
                                             </tr>
@@ -101,7 +101,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Password Generate</h1>
+                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Bank Crendtial</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -113,7 +113,7 @@
                             <div class="form shadow-sm p-4">
 
                                 <div class="mb-3">
-                                    <label for="sitename" class="form-label">Site Name</label>
+                                    <label for="sitename" class="form-label">Phone number</label>
                                     <input type="text" class="form-control" id="sitename"
                                         placeholder="Enter Site Name" name="sitename"
                                         value="{{ old('sitename', @$single_user->sitename ?? '') }}" autocomplete="url">
@@ -124,7 +124,7 @@
 
 
                                 <div class="mb-3">
-                                    <label for="username" class="form-label">User Name or Email</label>
+                                    <label for="username" class="form-label">Bank Name</label>
                                     <input type="text" class="form-control" id="username"
                                         placeholder="Enter User Name or Email" name="username"
                                         value="{{ old('username', @$single_user->username ?? '') }}"
@@ -188,71 +188,3 @@
 
 
 </x-app-layout>
-
-
-<script>
-    function generateStrongPassword(length = 12) {
-        const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-={}[]<>?";
-        let password = "";
-        for (let i = 0; i < length; i++) {
-            password += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return password;
-    }
-
-    // slider change → label update
-    $('#passwordLength').on('input', function() {
-        $('#pwdLengthLabel').text($(this).val());
-    });
-
-    // generate password
-    $('#generatePassword').on('click', function() {
-        const length = $('#passwordLength').val();
-        $('#password').val(generateStrongPassword(length));
-    });
-
-
-    // document.getElementById('generatePassword').addEventListener('click', function() {
-    //     const passwordInput = document.getElementById('password');
-    //     passwordInput.value = generateStrongPassword(12);
-    // });
-
-
-    $('.edit').on('click', function() {
-        const id = $(this).data('id');
-        const sitename = $(this).data('sitename');
-        const username = $(this).data('username');
-        const password = $(this).data('password');
-
-        $('#sitename').val(sitename);
-        $('#username').val(username);
-        $('#password').val(password);
-
-        // route('front.update', $single_user - > id)
-
-        $('#managerForm').attr('action', '/update/' + id);
-
-        $('#submitBtn').text('Update');
-
-        $('#staticBackdrop').modal('show');
-    });
-</script>
-<script>
-    $(document).ready(function() {
-        $('#searchInput').on('keyup', function() {
-            let query = $(this).val();
-
-            $.ajax({
-                url: "{{ route('front.ajaxSearch') }}",
-                type: "GET",
-                data: {
-                    search: query
-                },
-                success: function(data) {
-                    // replace table tbody with new data
-                    $('#userTable table tbody').html(data);
-                }
-            });
-        });
-    });
-</script>

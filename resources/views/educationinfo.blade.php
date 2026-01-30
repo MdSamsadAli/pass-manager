@@ -19,7 +19,7 @@
                             <div class="lists">
                                 <div class="d-flex align-items-center p-2 border-bottom justify-between">
                                     <div class="title-list">
-                                        <h4 class="m-0">Bank Details</h4>
+                                        <h4 class="m-0">Education Info</h4>
                                     </div>
                                 </div>
                                 <div class="items table-responsive" id="userTable">
@@ -27,9 +27,9 @@
                                         <thead>
                                             <tr>
                                                 <th scope="col">SNo.</th>
-                                                <th scope="col">User Name or Email</th>
-                                                <th scope="col">Site Name</th>
-                                                <th scope="col">Password</th>
+                                                <th scope="col">Student Name</th>
+                                                <th scope="col">Certificate</th>
+                                        
                                                 <th scope="col">Action</th>
                                             </tr>
                                         </thead>
@@ -101,19 +101,19 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Password Generate</h1>
+                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Add Certificate</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="">
-                        <form id="managerForm" action="{{ route('front.store') }}" method="POST" autocomplete="on">
+                        <form id="managerForm" action="#" method="POST" autocomplete="on">
 
                             @csrf
                             <input type="hidden" name="login" value="true">
                             <div class="form shadow-sm p-4">
 
                                 <div class="mb-3">
-                                    <label for="sitename" class="form-label">Site Name</label>
+                                    <label for="sitename" class="form-label">Student Name</label>
                                     <input type="text" class="form-control" id="sitename"
                                         placeholder="Enter Site Name" name="sitename"
                                         value="{{ old('sitename', @$single_user->sitename ?? '') }}" autocomplete="url">
@@ -122,50 +122,18 @@
                                     @enderror
                                 </div>
 
-
                                 <div class="mb-3">
-                                    <label for="username" class="form-label">User Name or Email</label>
-                                    <input type="text" class="form-control" id="username"
-                                        placeholder="Enter User Name or Email" name="username"
-                                        value="{{ old('username', @$single_user->username ?? '') }}"
-                                        autocomplete="username">
-                                    @error('username')
+                                    <label for="sitename" class="form-label">Certificate</label>
+                                    <input type="file" class="form-control" id="sitename"
+                                        placeholder="Enter Site Name" name="sitename"
+                                        value="{{ old('sitename', @$single_user->sitename ?? '') }}" multiple>
+                                    @error('sitename')
                                         <span class="text-danger">{{ $message }}</span>
                                     @enderror
                                 </div>
 
 
-                                <div class="mb-3">
-                                    <label for="password" class="form-label">Password</label>
-                                    <div class="position-relative">
-                                        <input type="password" placeholder="Enter your password" class="form-control"
-                                            name="password" id="password" value="{{ old('password', '' ?? '') }}"
-                                            autocomplete="current-password">
-                                        <span class="password-toggle"
-                                            style="position:absolute; right:15px; top:50%; transform:translateY(-50%); cursor:pointer;">
-                                            <i class="fa fa-eye-slash" id="togglePassword"></i>
-                                        </span>
 
-                                        <button type="button" class="btn btn-sm btn-secondary position-absolute"
-                                            style="right:50px; top:50%; transform:translateY(-50%)"
-                                            id="generatePassword">
-                                            Generate
-                                        </button>
-                                    </div>
-                                    @error('password')
-                                        <span class="text-danger">{{ $message }}</span>
-                                    @enderror
-
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label">
-                                        Password Length: <strong><span id="pwdLengthLabel">12</span></strong>
-                                    </label>
-
-                                    <input type="range" class="form-range" id="passwordLength" min="6"
-                                        max="32" step="1" value="12">
-                                </div>
 
                                 <div class="">
                                     <div class="submit-button text-end">
@@ -190,69 +158,4 @@
 </x-app-layout>
 
 
-<script>
-    function generateStrongPassword(length = 12) {
-        const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-={}[]<>?";
-        let password = "";
-        for (let i = 0; i < length; i++) {
-            password += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return password;
-    }
 
-    // slider change → label update
-    $('#passwordLength').on('input', function() {
-        $('#pwdLengthLabel').text($(this).val());
-    });
-
-    // generate password
-    $('#generatePassword').on('click', function() {
-        const length = $('#passwordLength').val();
-        $('#password').val(generateStrongPassword(length));
-    });
-
-
-    // document.getElementById('generatePassword').addEventListener('click', function() {
-    //     const passwordInput = document.getElementById('password');
-    //     passwordInput.value = generateStrongPassword(12);
-    // });
-
-
-    $('.edit').on('click', function() {
-        const id = $(this).data('id');
-        const sitename = $(this).data('sitename');
-        const username = $(this).data('username');
-        const password = $(this).data('password');
-
-        $('#sitename').val(sitename);
-        $('#username').val(username);
-        $('#password').val(password);
-
-        // route('front.update', $single_user - > id)
-
-        $('#managerForm').attr('action', '/update/' + id);
-
-        $('#submitBtn').text('Update');
-
-        $('#staticBackdrop').modal('show');
-    });
-</script>
-<script>
-    $(document).ready(function() {
-        $('#searchInput').on('keyup', function() {
-            let query = $(this).val();
-
-            $.ajax({
-                url: "{{ route('front.ajaxSearch') }}",
-                type: "GET",
-                data: {
-                    search: query
-                },
-                success: function(data) {
-                    // replace table tbody with new data
-                    $('#userTable table tbody').html(data);
-                }
-            });
-        });
-    });
-</script>

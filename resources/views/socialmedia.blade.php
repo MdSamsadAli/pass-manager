@@ -19,7 +19,7 @@
                             <div class="lists">
                                 <div class="d-flex align-items-center p-2 border-bottom justify-between">
                                     <div class="title-list">
-                                        <h4 class="m-0">All Items</h4>
+                                        <h4 class="m-0">Social Media</h4>
                                     </div>
 
 

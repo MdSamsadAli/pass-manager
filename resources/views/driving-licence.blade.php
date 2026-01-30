@@ -19,7 +19,7 @@
                             <div class="lists">
                                 <div class="d-flex align-items-center p-2 border-bottom justify-between">
                                     <div class="title-list">
-                                        <h4 class="m-0">All Items</h4>
+                                        <h4 class="m-0">Driving Licence</h4>
                                     </div>
 
 
@@ -45,9 +45,9 @@
                                         <thead>
                                             <tr>
                                                 <th scope="col">SNo.</th>
-                                                <th scope="col">User Name or Email</th>
-                                                <th scope="col">Site Name</th>
-                                                <th scope="col">Password</th>
+                                                <th scope="col">User Name</th>
+                                                <th scope="col">Phone no.</th>
+                                                <th scope="col">Licence no.</th>
                                                 <th scope="col">Action</th>
                                             </tr>
                                         </thead>
@@ -88,6 +88,7 @@
 
                                         </tbody>
                                     </table>
+                                    <h5 class="text-center">Data Not Added Yet</h5>
                                     <div>
                                         {{ $user_list->links('pagination::bootstrap-5') }}
                                     </div>
@@ -208,69 +209,4 @@
 </x-app-layout>
 
 
-<script>
-    function generateStrongPassword(length = 12) {
-        const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-={}[]<>?";
-        let password = "";
-        for (let i = 0; i < length; i++) {
-            password += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return password;
-    }
 
-    // slider change → label update
-    $('#passwordLength').on('input', function() {
-        $('#pwdLengthLabel').text($(this).val());
-    });
-
-    // generate password
-    $('#generatePassword').on('click', function() {
-        const length = $('#passwordLength').val();
-        $('#password').val(generateStrongPassword(length));
-    });
-
-
-    // document.getElementById('generatePassword').addEventListener('click', function() {
-    //     const passwordInput = document.getElementById('password');
-    //     passwordInput.value = generateStrongPassword(12);
-    // });
-
-
-    $('.edit').on('click', function() {
-        const id = $(this).data('id');
-        const sitename = $(this).data('sitename');
-        const username = $(this).data('username');
-        const password = $(this).data('password');
-
-        $('#sitename').val(sitename);
-        $('#username').val(username);
-        $('#password').val(password);
-
-        // route('front.update', $single_user - > id)
-
-        $('#managerForm').attr('action', '/update/' + id);
-
-        $('#submitBtn').text('Update');
-
-        $('#staticBackdrop').modal('show');
-    });
-</script>
-<script>
-    $(document).ready(function() {
-        $('#searchInput').on('keyup', function() {
-            let query = $(this).val();
-
-            $.ajax({
-                url: "{{ route('front.ajaxSearch') }}",
-                type: "GET",
-                data: {
-                    search: query
-                },
-                success: function(data) {
-                    // replace table tbody with new data
-                    $('#userTable table tbody').html(data);
-                }
-            });
-        });
-    });
-</script>
