@@ -26,3 +26,6 @@
             <td colspan="5" class="text-center">No results found</td>
         </tr>
     @endforelse
+
+
+    

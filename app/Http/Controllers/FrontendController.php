@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Manager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 
 class FrontendController extends Controller
 {
@@ -18,7 +17,6 @@ class FrontendController extends Controller
 
     public function store(Request $request)
     {
-
         $request->validate([
             'sitename' => 'required',
             'username' => 'required',
@@ -29,8 +27,8 @@ class FrontendController extends Controller
         $user->managers()->create($request->all());
 
         return redirect()
-            ->route('dashboard')
-            ->with('success', 'User Saved successfully!');
+            ->route('front.socialmedia')
+            ->with('success', 'Password saved successfully!');
     }
 
     public function edit($id)
@@ -47,42 +45,46 @@ class FrontendController extends Controller
         $request->validate([
             'sitename' => 'required',
             'username' => 'required',
-            'password' => 'nullable',
+            'password' => 'nullable|min:6',
         ]);
 
         $data = $request->all();
 
-        // if ($request->password) {
-        //     $data['password'] = $request->password;
-        // }
+        if (empty($request->password)) {
+            unset($data['password']);
+        }
 
         $user->update($data);
 
-        return redirect()->route('dashboard')
-            ->with('success', 'User updated successfully!');
+        return redirect()->route('front.socialmedia')
+            ->with('success', 'Password updated successfully!');
     }
 
     public function delete($id)
     {
         $delete = Manager::find($id);
+
         if ($delete) {
             $delete->delete();
-            return redirect()->route('dashboard')
-                ->with('success', 'User deleted successfully!');
+            return redirect()->route('front.socialmedia')
+                ->with('success', 'Password deleted successfully!');
         } else {
             return redirect()->route('dashboard')
-                ->with('error', 'Something wrong ');
+                ->with('error', 'Something went wrong');
         }
     }
 
     public function ajaxSearch(Request $request)
     {
-        $query = Manager::query();
+        $user = Auth::user();
+        $query = $user->managers();
 
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
-            $query->where('username', 'like', "%{$search}%")
-                ->orWhere('sitename', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->where('username', 'like', "%{$search}%")
+                    ->orWhere('sitename', 'like', "%{$search}%");
+            });
         }
 
         $user_list = $query->orderBy('id', 'desc')->get();
@@ -90,20 +92,47 @@ class FrontendController extends Controller
         return view('partial_list', compact('user_list'))->render();
     }
 
+    /**
+     * BOOKMARKLET - Show popup with credentials
+     */
     public function bookmarklet(Request $request)
     {
         $site = $request->site;
+
+        if (
+            $site === '127.0.0.1' ||
+            $site === 'localhost' ||
+            str_starts_with($site, '127.0.0.1:')
+        ) {
+            $site = $site;
+        } else {
+            if (!preg_match('#^https?://#i', $site)) {
+                $site = 'https://' . $site . '/';
+            } else {
+                $site = $site;
+            }
+        }
         $user = Auth::user();
-        $items = $user->managers()->get()->map(function ($item) {
-            return [
-                'username' => $item->sitename,
-                'password' => $item->password,
-            ];
-        });
-        // dd($items, $site);
+        $items = $user->managers()->get();
+        $items = $user->managers()
+            ->where('sitename', $site)
+            ->get();
         return view('bookmarklet', compact('items', 'site'));
     }
 
+    /**
+     * AUTOFILL HELPER - Return JavaScript
+     */
+    public function autofillHelper()
+    {
+        return response()->view('autofill-helper')
+            ->header('Content-Type', 'application/javascript')
+            ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
+    }
+
+    // Other methods
     public function socialMedia()
     {
         $user = Auth::user();

@@ -24,16 +24,7 @@
 
 
                                     <div class="d-flex gap-2">
-                                        <a href="javascript:(function(){
-                                window.open(
-                                '{{ url('/bookmarklet') }}?site='+location.hostname,
-                                'vault',
-                                'width=420,height=600'
-                                );
-                                })();"
-                                            class="btn btn-dark">
-                                            🔐 Save to MyVault
-                                        </a>
+
                                         <div class="search-data">
                                             <input type="search" class="form-control" id="searchInput"
                                                 placeholder="Search here...">
@@ -52,7 +43,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach ($user_list as $key => $item)
+                                            {{-- @foreach ($user_list as $key => $item)
                                                 <tr>
                                                     <th scope="row">{{ $key + 1 }}</th>
                                                     <td>{{ $item->username }}</td>
@@ -84,7 +75,7 @@
                                                         </div>
                                                     </td>
                                                 </tr>
-                                            @endforeach
+                                            @endforeach --}}
 
                                         </tbody>
                                     </table>
@@ -134,8 +125,7 @@
                                     <label for="sitename" class="form-label">Site Name</label>
                                     <input type="text" class="form-control" id="sitename"
                                         placeholder="Enter Site Name" name="sitename"
-                                        value="{{ old('sitename', @$single_user->sitename ?? '') }}"
-                                        autocomplete="url">
+                                        value="{{ old('sitename', @$single_user->sitename ?? '') }}" autocomplete="url">
                                     @error('sitename')
                                         <span class="text-danger">{{ $message }}</span>
                                     @enderror
@@ -207,6 +197,3 @@
 
 
 </x-app-layout>
-
-
-

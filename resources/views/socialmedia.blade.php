@@ -24,16 +24,10 @@
 
 
                                     <div class="d-flex gap-2">
-                                        <a href="javascript:(function(){
-                                window.open(
-                                '{{ url('/bookmarklet') }}?site='+location.hostname,
-                                'vault',
-                                'width=420,height=600'
-                                );
-                                })();"
-                                            class="btn btn-dark">
-                                            🔐 Save to MyVault
-                                        </a>
+                                        {{-- <a href="javascript:(function(){var s=document.createElement('script');s.src='{{ url('/autofill-helper') }}?t='+(new Date().getTime());document.head.appendChild(s);setTimeout(function(){window.open('{{ url('/bookmarklet') }}?site='+encodeURIComponent(location.hostname),'MyVault','width=450,height=650,scrollbars=yes,resizable=yes');},300);})();"
+                                            class="btn btn-dark" title="Drag to bookmarks bar">
+                                            🔐 MyVault Autofill
+                                        </a> --}}
                                         <div class="search-data">
                                             <input type="search" class="form-control" id="searchInput"
                                                 placeholder="Search here...">
@@ -103,6 +97,14 @@
     </div>
 
 
+    <!-- Hidden form for browser autofill detection (CRITICAL FOR AUTOFILL) -->
+    <div style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;">
+        <form id="hiddenLoginForm" autocomplete="on">
+            <input type="url" id="hiddenSitename" name="sitename" autocomplete="url" tabindex="-1">
+            <input type="email" id="hiddenUsername" name="username" autocomplete="username email" tabindex="-1">
+            <input type="password" id="hiddenPassword" name="password" autocomplete="current-password" tabindex="-1">
+        </form>
+    </div>
 
 
     <!-- Button trigger modal -->
@@ -132,7 +134,7 @@
                                 <div class="mb-3">
                                     <label for="sitename" class="form-label">Site Name</label>
                                     <input type="text" class="form-control" id="sitename"
-                                        placeholder="Enter Site Name" name="sitename"
+                                        placeholder="https://example.com" name="sitename"
                                         value="{{ old('sitename', @$single_user->sitename ?? '') }}"
                                         autocomplete="url">
                                     @error('sitename')
@@ -143,10 +145,10 @@
 
                                 <div class="mb-3">
                                     <label for="username" class="form-label">User Name or Email</label>
-                                    <input type="text" class="form-control" id="username"
+                                    <input type="email" class="form-control" id="username"
                                         placeholder="Enter User Name or Email" name="username"
                                         value="{{ old('username', @$single_user->username ?? '') }}"
-                                        autocomplete="username">
+                                        autocomplete="username email">
                                     @error('username')
                                         <span class="text-danger">{{ $message }}</span>
                                     @enderror
@@ -158,7 +160,7 @@
                                     <div class="position-relative">
                                         <input type="password" placeholder="Enter your password" class="form-control"
                                             name="password" id="password" value="{{ old('password', '' ?? '') }}"
-                                            autocomplete="current-password">
+                                            autocomplete="current-password new-password">
                                         <span class="password-toggle"
                                             style="position:absolute; right:15px; top:50%; transform:translateY(-50%); cursor:pointer;">
                                             <i class="fa fa-eye-slash" id="togglePassword"></i>
@@ -218,45 +220,149 @@
         return password;
     }
 
-    // slider change → label update
-    $('#passwordLength').on('input', function() {
-        $('#pwdLengthLabel').text($(this).val());
-    });
-
-    // generate password
-    $('#generatePassword').on('click', function() {
-        const length = $('#passwordLength').val();
-        $('#password').val(generateStrongPassword(length));
-    });
-
-
-    // document.getElementById('generatePassword').addEventListener('click', function() {
-    //     const passwordInput = document.getElementById('password');
-    //     passwordInput.value = generateStrongPassword(12);
-    // });
-
-
-    $('.edit').on('click', function() {
-        const id = $(this).data('id');
-        const sitename = $(this).data('sitename');
-        const username = $(this).data('username');
-        const password = $(this).data('password');
-
-        $('#sitename').val(sitename);
-        $('#username').val(username);
-        $('#password').val(password);
-
-        // route('front.update', $single_user - > id)
-
-        $('#managerForm').attr('action', '/update/' + id);
-
-        $('#submitBtn').text('Update');
-
-        $('#staticBackdrop').modal('show');
-    });
-</script>
-<script>
     $(document).ready(function() {
+        // ============================================
+        // AUTOFILL FUNCTIONALITY - START
+        // ============================================
+
+        // Sync hidden form values to modal when browser autofills them
+        setInterval(function() {
+            var hiddenUsername = $('#hiddenUsername').val();
+            var hiddenPassword = $('#hiddenPassword').val();
+            var hiddenSitename = $('#hiddenSitename').val();
+
+            // Only update if modal fields are empty
+            if (hiddenUsername && !$('#username').val()) {
+                $('#username').val(hiddenUsername);
+            }
+            if (hiddenPassword && !$('#password').val()) {
+                $('#password').val(hiddenPassword);
+            }
+            if (hiddenSitename && !$('#sitename').val()) {
+                $('#sitename').val(hiddenSitename);
+            }
+        }, 500);
+
+        // Sync modal values back to hidden form (so browser can save them)
+        $('#username, #password, #sitename').on('input change', function() {
+            var id = $(this).attr('id');
+            $('#hidden' + id.charAt(0).toUpperCase() + id.slice(1)).val($(this).val());
+        });
+
+        // Trigger autofill when modal opens
+        $('#staticBackdrop').on('shown.bs.modal', function() {
+            setTimeout(function() {
+                // Focus and blur to trigger browser autofill
+                $('#username').focus();
+                setTimeout(function() {
+                    $('#password').focus();
+                    setTimeout(function() {
+                        $('#sitename').focus().blur();
+                    }, 50);
+                }, 50);
+            }, 100);
+        });
+
+        // Use Credential Management API if available (modern browsers)
+        if (window.PasswordCredential) {
+            $('#staticBackdrop').on('shown.bs.modal', function() {
+                navigator.credentials.get({
+                    password: true,
+                    mediation: 'optional'
+                }).then(function(credential) {
+                    if (credential) {
+                        $('#username').val(credential.id);
+                        $('#password').val(credential.password);
+                        if (credential.name) {
+                            $('#sitename').val(credential.name);
+                        }
+
+                        // Also update hidden form
+                        $('#hiddenUsername').val(credential.id);
+                        $('#hiddenPassword').val(credential.password);
+                        if (credential.name) {
+                            $('#hiddenSitename').val(credential.name);
+                        }
+                    }
+                }).catch(function(error) {
+                    console.log('Credential API not available or user declined');
+                });
+            });
+
+            // Store credentials after successful save
+            $('#managerForm').on('submit', function(e) {
+                var username = $('#username').val();
+                var password = $('#password').val();
+                var sitename = $('#sitename').val();
+
+                if (username && password) {
+                    var credential = new PasswordCredential({
+                        id: username,
+                        password: password,
+                        name: sitename
+                    });
+
+                    navigator.credentials.store(credential).catch(function(err) {
+                        console.log('Could not store credential');
+                    });
+                }
+            });
+        }
+
+        // ============================================
+        // AUTOFILL FUNCTIONALITY - END
+        // ============================================
+
+        // Slider change → label update
+        $('#passwordLength').on('input', function() {
+            $('#pwdLengthLabel').text($(this).val());
+        });
+
+        // Generate password
+        $('#generatePassword').on('click', function() {
+            const length = $('#passwordLength').val();
+            const generatedPassword = generateStrongPassword(length);
+            $('#password').val(generatedPassword);
+
+            // Also update hidden form
+            $('#hiddenPassword').val(generatedPassword);
+        });
+
+        // Reset form for new entry
+        $('.fix-addbutton button').on('click', function() {
+            $('#managerForm')[0].reset();
+            $('#managerForm').attr('action', '{{ route('front.store') }}');
+            $('#submitBtn').text('Submit');
+            $('#passwordLength').val(12);
+            $('#pwdLengthLabel').text('12');
+
+            // Clear hidden form too
+            $('#hiddenLoginForm')[0].reset();
+        });
+
+        // Edit button handler
+        $(document).on('click', '.edit', function() {
+            const id = $(this).data('id');
+            const sitename = $(this).data('sitename');
+            const username = $(this).data('username');
+            const password = $(this).data('password');
+
+            $('#sitename').val(sitename);
+            $('#username').val(username);
+            $('#password').val(password);
+
+            // Also update hidden form
+            $('#hiddenSitename').val(sitename);
+            $('#hiddenUsername').val(username);
+            $('#hiddenPassword').val(password);
+
+            $('#managerForm').attr('action', '/update/' + id);
+            $('#submitBtn').text('Update');
+
+            $('#staticBackdrop').modal('show');
+        });
+
+        // Search functionality
         $('#searchInput').on('keyup', function() {
             let query = $(this).val();
 
@@ -267,10 +373,38 @@
                     search: query
                 },
                 success: function(data) {
-                    // replace table tbody with new data
                     $('#userTable table tbody').html(data);
                 }
             });
+        });
+
+        // Toggle password visibility in table
+        $(document).on('click', '.toggle-table-password', function() {
+            var $this = $(this);
+            var $pwdText = $this.siblings('.pwd-text');
+            var actualPwd = $pwdText.data('pwd');
+
+            if ($this.hasClass('fa-eye')) {
+                $pwdText.text('********');
+                $this.removeClass('fa-eye').addClass('fa-eye-slash');
+            } else {
+                $pwdText.text(actualPwd);
+                $this.removeClass('fa-eye-slash').addClass('fa-eye');
+            }
+        });
+
+        // Toggle password visibility in modal
+        $('#togglePassword').on('click', function() {
+            var passwordField = $('#password');
+            var type = passwordField.attr('type');
+
+            if (type === 'password') {
+                passwordField.attr('type', 'text');
+                $(this).removeClass('fa-eye-slash').addClass('fa-eye');
+            } else {
+                passwordField.attr('type', 'password');
+                $(this).removeClass('fa-eye').addClass('fa-eye-slash');
+            }
         });
     });
 </script>
