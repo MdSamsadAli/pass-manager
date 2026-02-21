@@ -19,10 +19,18 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the login view.
      */
+
+    public function ulogin()
+    {
+        return view('auth.login');
+    }
+
     public function create(): View
     {
         return view('auth.login');
     }
+
+
 
 
 
@@ -43,10 +51,7 @@ class AuthenticatedSessionController extends Controller
         $user->save();
 
 
-        Mail::raw("Your OTP is: $otp", function ($message) use ($user) {
-            $message->to($user->email)
-                ->subject('Your Login OTP');
-        });
+        Mail::to($user->email)->queue(new \App\Mail\OtpMail($otp));
 
         Auth::logout();
 

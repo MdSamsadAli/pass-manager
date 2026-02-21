@@ -5,22 +5,18 @@ use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('auth.login');
-});
+// Route::get('/test-mail', function () {
+//     try {
+//         \Mail::raw('OTP test mail', function ($message) {
+//             $message->to('samali2md@gmail.com')
+//                 ->subject('Test OTP Mail');
+//         });
 
-Route::get('/test-mail', function () {
-    try {
-        \Mail::raw('OTP test mail', function ($message) {
-            $message->to('samali2md@gmail.com')
-                ->subject('Test OTP Mail');
-        });
-
-        return 'Mail sent successfully!';
-    } catch (\Exception $e) {
-        return $e->getMessage();
-    }
-});
+//         return 'Mail sent successfully!';
+//     } catch (\Exception $e) {
+//         return $e->getMessage();
+//     }
+// });
 
 
 Route::middleware('auth')->group(function () {
